@@ -9,6 +9,20 @@ import {
 
 import { Customer } from './customer';
 
+function emailMatcher(c: AbstractControl): { [key: string]: boolean } | null {
+  const emailControl = c.get('email');
+  const confirmControl = c.get('confirmEmail');
+
+  if (emailControl.pristine || confirmControl.pristine) {
+    return null;
+  }
+
+  if (emailControl.value === confirmControl.value) {
+    return null;
+  }
+  return { match: true };
+}
+
 function ratingRange(min: number, max: number): ValidatorFn {
   return (c: AbstractControl): { [key: string]: boolean } | null => {
     if (
@@ -29,6 +43,7 @@ function ratingRange(min: number, max: number): ValidatorFn {
 export class CustomerComponent implements OnInit {
   customerForm: FormGroup;
   customer = new Customer();
+  emailMessage = 'Please ensure correct email address';
 
   constructor(private fb: FormBuilder) {}
 
@@ -36,10 +51,15 @@ export class CustomerComponent implements OnInit {
     this.customerForm = this.fb.group({
       firstName: ['', [Validators.required, Validators.minLength(3)]],
       lastName: ['', [Validators.required, Validators.maxLength(50)]],
-      emailGroup: this.fb.group({
-        email: ['', [Validators.required, Validators.email]],
-        confirmEmail: ['', Validators.required],
-      }),
+      emailGroup: this.fb.group(
+        {
+          email: ['', [Validators.required, Validators.email]],
+          confirmEmail: ['', Validators.required],
+        },
+        {
+          validators: emailMatcher,
+        }
+      ),
       phone: '',
       rating: [null, ratingRange(1, 5)],
       notification: 'email',
