@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import {
   AbstractControl,
+  FormArray,
   FormBuilder,
   FormGroup,
   ValidatorFn,
@@ -47,6 +48,10 @@ export class CustomerComponent implements OnInit {
   customer = new Customer();
   emailMessage: string;
 
+  get addresses(): FormArray {
+    return <FormArray>this.customerForm.get('addresses');
+  }
+
   private validationMessages = {
     required: 'Please enter your email address.',
     email: 'Please enter a valid email address.',
@@ -71,6 +76,7 @@ export class CustomerComponent implements OnInit {
       rating: [null, ratingRange(1, 5)],
       notification: 'email',
       sendCatalog: true,
+      addresses: this.fb.array([this.buildAddress()]),
     });
 
     this.customerForm
@@ -116,5 +122,20 @@ export class CustomerComponent implements OnInit {
         .map((key) => this.validationMessages[key])
         .join(' ');
     }
+  }
+
+  addAddress(): void {
+    this.addresses.push(this.buildAddress());
+  }
+
+  buildAddress(): FormGroup {
+    return this.fb.group({
+      addressType: 'home',
+      street1: '',
+      street2: '',
+      city: '',
+      state: '',
+      zip: '',
+    });
   }
 }
